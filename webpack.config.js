@@ -50,6 +50,15 @@ module.exports = {
         ]
       },
       {
+        test: /\.html$/,
+        use: {
+          loader: 'html-loader',
+          options: {
+            interpolate: true
+          },
+        },
+      },
+      {
         test: /\.(png|jpe?g|gif)$/,
         use: [
           {
@@ -85,12 +94,11 @@ module.exports = {
       name: true
     }
   },
-  // plugins: [
-  //   new HtmlWebpackPlugin({
-  //     template: "src/pages/index.html"
-  //   }),
-  // ],
   plugins: [
+    new HtmlWebpackPlugin({
+      template: "src/index.html",
+      filename: 'index.html'
+    }),
     ...pages.map(page => new HtmlWebpackPlugin({ template: `src/pages/${page}`, filename: `${page.slice(0, -5)}/index.html` }))
   ]
 };

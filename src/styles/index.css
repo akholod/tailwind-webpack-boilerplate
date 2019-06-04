@@ -7,3 +7,6 @@
 body {
   background-color: rgb(219, 210, 210);
 }
+.bg {
+  background-image: url('../images/logo.jpeg');
+}
