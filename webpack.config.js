@@ -2,8 +2,21 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require('fs');
-const pages = fs.readdirSync(path.resolve(__dirname, "src/pages"));
-console.log('pages :', pages);
+
+function getHtmlFiles(pagesPath = 'src/pages', files_ = []) {
+  const files = fs.readdirSync(path.resolve(__dirname, pagesPath));
+  files.forEach(filename => {
+    const filepath = path.resolve(__dirname, pagesPath, filename);
+    if(fs.statSync(filepath).isDirectory()) {
+      getHtmlFiles(`${pagesPath}/${filename}`, files_);
+    } else {
+      files_.push(pagesPath);
+    }
+  });
+  return files_.map(file => file.replace(pagesPath, '').slice(1));
+}
+const htmlPages = getHtmlFiles('src/pages');
+
 module.exports = {
   devtool: "inline-source-map",
   devServer: {
@@ -92,6 +105,9 @@ module.exports = {
       template: "src/index.html",
       filename: 'index.html'
     }),
-    ...pages.map(page => new HtmlWebpackPlugin({ template: `src/pages/${page}`, filename: `${page.slice(0, -5)}/index.html` }))
+    ...htmlPages.map((page) => new HtmlWebpackPlugin({
+      template: `src/pages/${page}/index.html`,
+      filename: `${page}/index.html`
+    }))
   ]
 };
