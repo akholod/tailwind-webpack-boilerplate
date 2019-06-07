@@ -1,7 +1,9 @@
 /* eslint-disable */
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require('fs');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 function getHtmlFiles(pagesPath = 'src/pages', files_ = []) {
   const files = fs.readdirSync(path.resolve(__dirname, pagesPath));
@@ -13,16 +15,17 @@ function getHtmlFiles(pagesPath = 'src/pages', files_ = []) {
       files_.push(pagesPath);
     }
   });
-  return files_.map(file => file.replace(pagesPath, '').slice(1));
+  return files_.map(file => file.replace(pagesPath, '').slice(1)).filter(f => f);
 }
 const htmlPages = getHtmlFiles('src/pages');
+console.log('htmlPages :', htmlPages);
 
 module.exports = {
   devtool: "inline-source-map",
   devServer: {
     publicPath: "/",
     port: 9000,
-    contentBase: path.join(process.cwd(), "dist"),
+    contentBase: path.join(process.cwd(), "src"),
     host: "localhost",
     historyApiFallback: true,
     noInfo: false,
@@ -58,23 +61,20 @@ module.exports = {
       {
         test: /\.html$/,
         use: {
-          loader: 'html-loader',
-          options: {
-            interpolate: true
-          },
+          loader: 'html-loader?interpolate=require',
         },
       },
       {
-        test: /\.(png|jpe?g|gif)$/,
+        test: /\.(png|jpe?g|gif)$/i,
         use: [
           {
-            loader: "file-loader",
+            loader: 'url-loader',
             options: {
-              name: "[path][name].[ext]"
-            }
-          }
-        ]
-      }
+              limit: 8192,
+            },
+          },
+        ],
+      },
     ]
   },
 
@@ -102,12 +102,14 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "src/index.html",
+      template: "src/pages/index.html",
       filename: 'index.html'
     }),
     ...htmlPages.map((page) => new HtmlWebpackPlugin({
       template: `src/pages/${page}/index.html`,
       filename: `${page}/index.html`
-    }))
+    })),
+
+    new CleanWebpackPlugin(),
   ]
 };
